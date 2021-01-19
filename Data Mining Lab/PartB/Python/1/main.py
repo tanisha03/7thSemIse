@@ -1,32 +1,32 @@
 import pandas as pd
-df = pd.read_csv('data.csv')
-print(df.head)
+from sklearn import preprocessing
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-# data processing
-df = df.drop('Unnamed: 0', axis=1)
+df = pd.read_csv("CustomerData.csv")
+df.head()
 
-#check for NA values
-df.isna().sum()
-df = df.fillna(df.median())
-# We use median instead of mean because median is not affected by outliers, whereas mean is.
+# Data Processing
+print(df.isnull().sum())
+df.gender.fillna(df.gender.mode()[0], inplace=True)
+df.category.fillna(df.category.mode()[0], inplace=True)
+df.age.fillna(int(df.age.mean()), inplace=True)
+df["annual income (lakhs)"].fillna(df["annual income (lakhs)"].mean(), inplace=True)
+print(df.isnull().sum())
 
-#handle categorical value - hot encode
+# Data transformation
 
-#dependent and independent variables
-df['quality'].value_counts()
+encoder = preprocessing.LabelEncoder()
+df[["category", "purchase type ", "gender"]] = df[
+    ["category", "purchase type ", "gender"]
+].apply(encoder.fit_transform)
+print(df.head())
 
-# Quality is on a scale of 1 to 10, but our data only has samples for 3,4,5,6,7,8.
-
-# Lets convert this into a binary classification problem for simplicity sake.
-
-# Thus, we'll covert this scale of quality into 2 categories, ['low', 'high'] defined as <=5 is low, >5 is high.
-
-def get_quality(x):
-    if x <= 5:
-        return 'low'
-    else:
-        return 'high'
-
-df['quality'] = df['quality'].apply(lambda x: get_quality(x))
-df['quality'].value_counts()
-df.to_csv('data_cleaned.csv', index=False)
+scaler = preprocessing.MinMaxScaler()
+df[
+    ["spending score", "items purchased (monthly)", "annual income (lakhs)"]
+] = scaler.fit_transform(
+    df[["spending score", "items purchased (monthly)", "annual income (lakhs)"]]
+)
+print(df.head())
