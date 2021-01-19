@@ -35,6 +35,7 @@ print(df.head())
 features = df[['age', 'gender', 'annual income (lakhs)']]
 target = df['purchase type ']
 
+# This is not required in this, as we are doing clustering
 x_train, x_test, y_train, y_test = train_test_split(features,
                                                     target,
                                                     random_state=0,
@@ -42,12 +43,17 @@ x_train, x_test, y_train, y_test = train_test_split(features,
 
 from sklearn.cluster import KMeans
 
+#Add income too, it is a good parameter to form clusters (Not necessarily)
 dataframe = df[['gender', 'age', 'category']]
 
 kmeans = KMeans(n_clusters=5, random_state=0)
 kmeans.fit_predict(dataframe)
 print("Cluster centers\n", kmeans.cluster_centers_)
 dataframe['cluster'] = kmeans.labels_
+
+#A better reprsentation of clusters would be this.
+sns.scatterplot(data=dataframe,x = dataframe.age,y = dataframe.category,hue='cluster')
+plt.show()
 
 sns.scatterplot(data=dataframe, x=dataframe.cluster, y=dataframe.age)
 plt.show()
