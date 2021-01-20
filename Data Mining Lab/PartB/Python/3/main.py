@@ -29,6 +29,9 @@ min_confidence = 0.7
 
 rules = apriori(records, min_support = min_sup, min_confidence = min_confidence)
 rules = list(rules)
+print("------------------")
+print(rules)
+print("---------")
 
 
 for rule in rules:

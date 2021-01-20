@@ -32,8 +32,8 @@ df[["spending score", "items purchased (monthly)",
     ]])
 print(df.head())
 
-features = df[['age', 'gender', 'annual income (lakhs)']]
-target = df['purchase type ']
+features = df[["age", "gender", "annual income (lakhs)"]]
+target = df["purchase type "]
 
 x_train, x_test, y_train, y_test = train_test_split(features,
                                                     target,
@@ -42,28 +42,22 @@ x_train, x_test, y_train, y_test = train_test_split(features,
 
 from sklearn.cluster import KMeans
 
-dataframe = df[['gender', 'age', 'category']]
+dataframe = df[["gender", "age", "category"]]
 
 kmeans = KMeans(n_clusters=5, random_state=0)
 kmeans.fit_predict(dataframe)
 print("Cluster centers\n", kmeans.cluster_centers_)
-dataframe['cluster'] = kmeans.labels_
+dataframe["cluster"] = kmeans.labels_
 
 sns.scatterplot(data=dataframe, x=dataframe.cluster, y=dataframe.age)
 plt.show()
 
-sns.scatterplot(data=dataframe,
-                x=dataframe.cluster,
-                y=dataframe.gender.replace({
-                    0: "Male",
-                    1: "Female"
-                }))
-plt.show()
-
-sns.scatterplot(data=dataframe,
-                x=dataframe.cluster,
-                y=dataframe.gender.replace({
-                    0: "Male",
-                    1: "Female"
-                }))
+sns.scatterplot(
+    data=dataframe,
+    x=dataframe.cluster,
+    y=dataframe.gender.replace({
+        0: "Male",
+        1: "Female"
+    }),
+)
 plt.show()
