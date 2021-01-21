@@ -45,7 +45,6 @@ from sklearn.tree import DecisionTreeClassifier
 classifierDT = DecisionTreeClassifier()
 classifierDT.fit(x_train, y_train)
 predicted_labels = classifierDT.predict(x_test)
-classifierDT.score(x_test, y_test)
 
 from sklearn import metrics
 

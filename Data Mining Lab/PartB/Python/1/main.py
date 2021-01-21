@@ -24,9 +24,6 @@ df[["category", "purchase type ", "gender"]] = df[
 print(df.head())
 
 scaler = preprocessing.MinMaxScaler()
-df[
-    ["spending score", "items purchased (monthly)", "annual income (lakhs)"]
-] = scaler.fit_transform(
-    df[["spending score", "items purchased (monthly)", "annual income (lakhs)"]]
-)
+df[["spending score", "items purchased (monthly)", "annual income (lakhs)"]
+] = df[["spending score", "items purchased (monthly)", "annual income (lakhs)"]].apply(scaler.fit_transform)
 print(df.head())
