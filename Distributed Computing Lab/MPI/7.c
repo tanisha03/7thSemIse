@@ -5,11 +5,11 @@
 #include<string.h>
 #define BUFFER_SIZE 32
 
-int main(int argc, char* argv[])
+int main()
 {
 	int rank,numprocs,tag=0,root=3,temp=1;
 	char msg[BUFFER_SIZE];
-	MPI_Init(&argc,&argv);
+	MPI_Init(null,null);
 	MPI_Status status;
 	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
