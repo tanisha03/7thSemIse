@@ -18,7 +18,7 @@ void populate_points(){
     for(i=0;i<num_points;i++){
         datapoints[i][0]=rand()%100;
         datapoints[i][1]=rand()%100;
-        printf("%ld\t%ld\n",datapoints[i][0],datapoints[i][1]);
+        // printf("%ld\t%ld\n",datapoints[i][0],datapoints[i][1]);
     }
     for(i=0;i<4;i++)
         cluster_count[i]=0;
