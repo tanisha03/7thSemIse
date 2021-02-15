@@ -64,14 +64,14 @@ plt.show()
 from sklearn.cluster import DBSCAN
 
 dbscan = DBSCAN(eps=3, min_samples=3)
-clusters = dbscan.fit_predict(dataset)
-dataset["dbscan cluster"] = clusters
+clusters = dbscan.fit_predict(dataframe)
+dataframe["dbscan cluster"] = clusters
 
-sns.scatterplot(data=dataset, x=dataset["dbscan cluster"], y=dataset["age"])
-sns.scatterplot(data=dataset, x=dataset["dbscan cluster"], y=dataset["income"])
+sns.scatterplot(data=dataframe, x=dataframe["dbscan cluster"], y=dataframe["age"])
+# sns.scatterplot(data=dataframe, x=dataframe["dbscan cluster"], y=dataframe["income"])
 sns.scatterplot(
-    data=dataset,
-    x=dataset["dbscan cluster"],
-    y=dataset["gender_encode"].replace({0: "F", 1: "M"}),
+    data=dataframe,
+    x=dataframe["dbscan cluster"],
+    y=dataframe["gender"].replace({0: "F", 1: "M"}),
 )
 
