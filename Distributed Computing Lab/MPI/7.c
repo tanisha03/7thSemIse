@@ -7,7 +7,7 @@
 
 int main()
 {
-	int rank,numprocs,tag=0,root=3,temp=1;
+	int rank,numprocs, =0,root=3,temp=1;
 	char msg[BUFFER_SIZE];
 	MPI_Init(null,null);
 	MPI_Status status;
