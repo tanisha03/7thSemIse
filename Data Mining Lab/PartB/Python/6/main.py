@@ -13,32 +13,31 @@ print(df.isnull().sum())
 df.gender.fillna(df.gender.mode()[0], inplace=True)
 df.category.fillna(df.category.mode()[0], inplace=True)
 df.age.fillna(int(df.age.mean()), inplace=True)
-df["annual income (lakhs)"].fillna(df["annual income (lakhs)"].mean(),
-                                   inplace=True)
+df["annual income (lakhs)"].fillna(df["annual income (lakhs)"].mean(), inplace=True)
 print(df.isnull().sum())
 
 # Data transformation
 
 encoder = preprocessing.LabelEncoder()
-df[["category", "purchase type ",
-    "gender"]] = df[["category", "purchase type ",
-                     "gender"]].apply(encoder.fit_transform)
+df[["category", "purchase type ", "gender"]] = df[
+    ["category", "purchase type ", "gender"]
+].apply(encoder.fit_transform)
 print(df.head())
 
 scaler = preprocessing.MinMaxScaler()
-df[["spending score", "items purchased (monthly)",
-    "annual income (lakhs)"]] = scaler.fit_transform(df[[
-        "spending score", "items purchased (monthly)", "annual income (lakhs)"
-    ]])
+df[
+    ["spending score", "items purchased (monthly)", "annual income (lakhs)"]
+] = scaler.fit_transform(
+    df[["spending score", "items purchased (monthly)", "annual income (lakhs)"]]
+)
 print(df.head())
 
-features = df[['age', 'gender', 'annual income (lakhs)']]
-target = df['purchase type ']
+features = df[["age", "gender", "annual income (lakhs)"]]
+target = df["purchase type "]
 
-x_train, x_test, y_train, y_test = train_test_split(features,
-                                                    target,
-                                                    random_state=0,
-                                                    test_size=0.3)
+x_train, x_test, y_train, y_test = train_test_split(
+    features, target, random_state=0, test_size=0.3
+)
 
 from sklearn.ensemble import BaggingClassifier
 
@@ -54,8 +53,8 @@ print(metrics.classification_report(y_test, predicted))
 print("\nConfusion matrix :\n", metrics.confusion_matrix(y_test, predicted))
 print("\nArea under the curve: ", metrics.roc_auc_score(y_test, predicted))
 fpr, tpr, thresholds = metrics.roc_curve(y_test, probability)
-plt.plot(fpr, tpr, color='orange')
-plt.plot([0, 1], [0, 1], linestyle='--')
-plt.xlabel('fpr')
-plt.ylabel('tpr')
+plt.plot(fpr, tpr, color="orange")
+plt.plot([0, 1], [0, 1], linestyle="--")
+plt.xlabel("fpr")
+plt.ylabel("tpr")
 plt.show()
