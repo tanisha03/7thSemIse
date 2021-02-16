@@ -1,74 +1,80 @@
-//New communications
-
 #include<stdio.h>
-#include<stdlib.h>
 #include<mpi.h>
-#include<time.h>
+#include<stdlib.h>
 
-void main(int argc, char* argv[])
-{
+void main(int argc,char *argv[]){
+    int rank,size;
+    MPI_Init(&argc,&argv);
+    MPI_Comm_size(MPI_COMM_WORLD,&size);
+    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
-    MPI_Comm even_comm_id, odd_comm_id;
-    MPI_Group even_group_id, odd_group_id, world_group_id;
-    int even_id, even_id_sum, even_p, *even_rank, i, j, id, p, ierr, odd_id, odd_id_sum, *odd_rank, odd_p;
-    
-    MPI_Init(&argc, &argv);
-    MPI_Comm_size(MPI_COMM_WORLD, &p);
-    MPI_Comm_rank(MPI_COMM_WORLD, &id);
-    
-    if(id==0)
-	{
-       
-        printf("\nCommunicatorMPI: Master process\n");
-        printf("The number of processes is %d.\n",p);
+    MPI_Comm odd_comm_id, even_comm_id;
+    MPI_Group world_group_id,odd_group_id,even_group_id;
+
+    if(rank == 0){
+        printf("\nCommunicator MPI: Master process");
+        printf("\nThe number of processes are %d ",size);
     }
+
+    MPI_Comm_group(MPI_COMM_WORLD,&world_group_id);
+
+    int even_p,odd_p;
+    int even_id,odd_id;
+    int even_id_sum, odd_id_sum;
     
-    printf("Process %d says 'Hello World!'\n",id);
-    
-    MPI_Comm_group(MPI_COMM_WORLD, &world_group_id);
-    
-    even_p=(p+1)/2;
-    even_rank=(int*)malloc(even_p*sizeof(int));
-    j=0;
-    
-	for(i=0;i<p;i+=2)
-        even_rank[j++]=i;
-    MPI_Group_incl(world_group_id,even_p,even_rank,&even_group_id);
+    even_p = (size+1)/2;
+    odd_p = (size)/2;
+
+    int even_ranks[even_p];
+    int odd_ranks[odd_p];
+
+    int j = 0;
+    int k = 0;
+    for(j=0;j<size;j+=2){
+        even_ranks[k] = j;
+        k = k + 1;
+    }
+
+    j = 0;
+    k = 0;
+    for(j=1;j<size;j+=2){
+        odd_ranks[k] = j;
+        k = k + 1;
+    }
+
+    //create group and communicator.
+    MPI_Group_incl(world_group_id,even_p,even_ranks,&even_group_id);
     MPI_Comm_create(MPI_COMM_WORLD,even_group_id,&even_comm_id);
-    
-    odd_p=p/2;
-    odd_rank=(int*)malloc(odd_p*sizeof(int));
-    j=0;
-    
-	for(i=1;i<p;i+=2)
-        odd_rank[j++]=i;
-    MPI_Group_incl(world_group_id,odd_p,odd_rank,&odd_group_id);
+
+    MPI_Group_incl(world_group_id,odd_p,odd_ranks,&odd_group_id);
     MPI_Comm_create(MPI_COMM_WORLD,odd_group_id,&odd_comm_id);
-    
-    if(id%2!=0)
-	{
-        ierr=MPI_Comm_rank(odd_comm_id, &odd_id);
-        even_id=-1;
+
+    //odd rank
+    if(rank%2 != 0){
+        MPI_Comm_rank(odd_comm_id,&odd_id);
+        even_id = -1;
     }
-    
-    if(id%2==0)
-	{
-        ierr=MPI_Comm_rank(even_comm_id, &even_id);
-        odd_id=-1;
+
+    if(rank%2 == 0){
+        MPI_Comm_rank(even_comm_id,&even_id);
+        odd_id = -1;
     }
-    
-    if(even_id!=-1)
-        MPI_Reduce(&id, &even_id_sum,1,MPI_INT,MPI_SUM,0,even_comm_id);
-    
-    if(even_id==0)
-        printf("Number of processes in even communicator=%d\n Sum of global ID's in even communicator is :%d\n",even_p,even_id_sum);
-    
-    if(odd_id!=-1)
-        MPI_Reduce(&id, &odd_id_sum,1,MPI_INT,MPI_SUM,0,odd_comm_id);
-    
-	if(odd_id==0)
-        printf("Number of processes in odd communicator=%d\n Sum of global ID's in odd communicator is : %d\n",odd_p,odd_id_sum);
-    
+
+    if(odd_id != -1){
+        MPI_Reduce(&rank,&odd_id_sum,1,MPI_INT,MPI_SUM,0,odd_comm_id);
+    }
+
+    if(even_id != -1){
+        MPI_Reduce(&rank,&even_id_sum,1,MPI_INT,MPI_SUM,0,even_comm_id);
+    }
+
+    if(even_id == 0){
+        printf("\nNumber of processes in the even communicator: %d\n",even_p);
+        printf("\nSum of global id's in even communicator:%d\n",even_id_sum);
+    }
+    if(odd_id == 0){
+        printf("\nNumber of processes in the odd communicator: %d\n",odd_p);
+        printf("\nSum of global id's in odd communicator:%d\n",odd_id_sum);
+    }
     MPI_Finalize();
-    
 }

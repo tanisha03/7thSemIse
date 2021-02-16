@@ -8,7 +8,7 @@ void main()
 	printf("Enter a number to check its factorial\n");
 	scanf("%d",&a);
 	
-	#pragma omp parallel for firstprivate(a)
+	#pragma omp parallel for reduction(*:fact1)
 	for(i = 2; i<=a; i++) 
 		fact1 = fact1 * i;
 
