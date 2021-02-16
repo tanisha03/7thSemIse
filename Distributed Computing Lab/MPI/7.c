@@ -1,33 +1,28 @@
-//Communication Among processors
-
+//Write a program for communication among two processes.
 #include<stdio.h>
 #include<mpi.h>
 #include<string.h>
-#define BUFFER_SIZE 32
-
 int main()
 {
-	int rank,numprocs, =0,root=3,temp=1;
-	char msg[BUFFER_SIZE];
-	MPI_Init(null,null);
-	MPI_Status status;
-	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-	MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
-	if(rank==3)
-	{
-		strcpy(msg,"Hello");
-		for(temp=0;temp<numprocs;temp++)
-		{
-			if(temp!=3)
-			{
-				MPI_Send(msg,BUFFER_SIZE,MPI_CHAR,temp,tag,MPI_COMM_WORLD);
-			}
-		}
-	}
-	else
-	{
-		MPI_Recv(msg,BUFFER_SIZE,MPI_CHAR,root,tag,MPI_COMM_WORLD,&status);
-		printf("\n%s in process with rank %d from process with rank %d\n",msg,rank,root);
-	}
-	MPI_Finalize();
+    int rank, size;
+    char* message;
+    int stringSize;
+
+    MPI_Init(null, null);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    if(rank == 0)
+    {
+        message = "Hello from the master process";
+        stringSize = strlen(message);
+        MPI_Send(message, stringSize, MPI_CHAR, 1, 0, MPI_COMM_WORLD);
+
+    } else {
+        MPI_Recv(message, stringSize, MPI_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        printf("Message from the master received by the slave : %s\n",message);
+    }
+    MPI_Finalize();
+
+    return 0;
 }
