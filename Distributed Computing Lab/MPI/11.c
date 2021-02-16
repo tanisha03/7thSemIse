@@ -2,75 +2,115 @@
 
 #include<stdio.h>
 #include<mpi.h>
-#include<sys/time.h>
-#define N 4 //Size of matrix
-
-MPI_Status status;
-double a[N][N], b[N][N], c[N][N];
-
-int main(int argc, char* argv[])
+#include<stdlib.h>
+#define m 3
+#define n 2
+#define o 3
+void main(int argc, char **argv)
 {
-        int ntasks, tid, nworkers, src, dest, rows, offset, i, j, k;
-        struct timeval start, stop;
-        
-		MPI_Init(&argc, &argv);
-        MPI_Comm_rank(MPI_COMM_WORLD, &tid);
-        MPI_Comm_size(MPI_COMM_WORLD, &ntasks);
-        
-		nworkers=ntasks-1;
-        if(tid==0)
+	int rank, size;
+	
+	MPI_Init(&argc, &argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	
+	int a[n][n], b[n][n], c[n][n];
+	int rows, offset;
+	
+	if(rank == 0)
+	{
+	
+	printf("\n****A****");
+	for(int i = 0; i < n; i++)
+	{
+		printf("\n");
+		for(int j = 0; j < n; j++)
 		{
-            for(i=0; i<N; i++)
-                for(j=0; j<N; j++)
-				{
-                	a[i][j]=1.0;
-                    b[i][j]=2.0;
-                }
-            double t1 = MPI_Wtime();
-            rows=N/nworkers;
-            offset=0;
-            for(dest=1; dest<=nworkers; dest++)
-			{
-                MPI_Send(&offset, 1, MPI_INT, dest, 1, MPI_COMM_WORLD);
-                MPI_Send(&rows, 1, MPI_INT, dest, 1, MPI_COMM_WORLD);
-                MPI_Send(&a[offset][0], rows*N, MPI_DOUBLE, dest, 1, MPI_COMM_WORLD);
-                MPI_Send(&b, N*N, MPI_DOUBLE, dest, 1, MPI_COMM_WORLD);
-                offset=offset+rows;
-            }
-            for(i=1; i<=nworkers; i++)
-			{
-                src=i;
-                MPI_Recv(&offset, 1, MPI_INT, src, 2, MPI_COMM_WORLD, &status);
-                MPI_Recv(&rows, 1, MPI_INT, src, 2, MPI_COMM_WORLD, &status);
-                MPI_Recv(&c[offset][0], rows*N, MPI_DOUBLE, src, 2, MPI_COMM_WORLD, &status);
-            }
-            double t2 = MPI_Wtime();
-            printf("Here is the result matrix\n");
-            for(i=0; i<N; i++)
-			{
-                for(j=0; j<N; j++)
-                	printf("%6.2f ", c[i][j]);
-                printf("\n");
-            }
-                printf("Time = %f\n\n",(t2-t1));
-        }
-        if(tid>0)
+			a[i][j] = 5;
+			printf("%d\t", a[i][j]);
+		}
+	}
+	
+	printf("\n****B****");
+	
+	for(int i = 0; i < n; i++)
+	{
+		printf("\n");
+		for(int j = 0; j < n; j++)
 		{
-            src=0;
-            MPI_Recv(&offset, 1, MPI_INT, src, 1, MPI_COMM_WORLD, &status);
-            MPI_Recv(&rows, 1, MPI_INT, src, 1, MPI_COMM_WORLD, &status);
-            MPI_Recv(&a, rows*N, MPI_DOUBLE, src, 1, MPI_COMM_WORLD, &status);
-            MPI_Recv(&b, N*N, MPI_DOUBLE, src, 1, MPI_COMM_WORLD, &status);
-            for(k=0; k<N; k++)
-            	for(i=0; i<rows; i++)
+			b[i][j] = 2;
+			printf("%d\t", b[i][j]);
+		}
+	}
+	
+	
+	rows = n/(size - 1);  //no. of rows of A to be sent
+	offset = 0;	//starting index of the row being sent
+	
+	
+	//sending the required values
+	for(int i = 1; i<=size-1; i++)
+	{
+		MPI_Send(&rows, 1, MPI_INT, i, 1, MPI_COMM_WORLD);
+		MPI_Send(&offset, 1, MPI_INT, i, 1, MPI_COMM_WORLD);
+		MPI_Send(&a[offset][0], rows*n, MPI_INT, i, 1, MPI_COMM_WORLD);
+		MPI_Send(&b, n*n, MPI_INT, i, 1, MPI_COMM_WORLD);
+		
+		offset = offset + rows;
+	}
+	
+	
+	//master receiving result from all slave processes
+	for(int i = 1; i<=(size - 1); i++)
+	{
+		MPI_Recv(&offset, 1, MPI_INT, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Recv(&rows, 1, MPI_INT, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Recv(&c[offset][0], rows*n, MPI_INT, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	}
+	
+	
+	//Print final result
+	printf("\n****C****");
+	for(int i = 0; i<n; i++)
+	{
+		printf("\n");
+		for(int j = 0; j<n; j++)
+		{
+			printf("%d\t", c[i][j]); 
+		}
+	}
+	
+	}
+	
+	else
+	{
+	
+		//Receiving values sent by the master
+		MPI_Recv(&rows, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Recv(&offset, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Recv(&a, rows*n, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Recv(&b, n*n, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			
+				
+		for(int i = 0; i<rows; i++)
+		{
+			for(int j = 0; j<n; j++)
+			{
+				c[i][j] = 0;
+				
+				for(int k = 0; k<n; k++)
 				{
-                	c[i][k]=0.0;
-                    for(j=0; j<N; j++)
-                    	c[i][k]=c[i][k]+a[i][j]*b[j][k];
-                }
-                MPI_Send(&offset, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);
-                MPI_Send(&rows, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);
-                MPI_Send(&c, rows*N, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD);
-        }
-        MPI_Finalize();
+					c[i][j] += a[i][k] * b[k][j];
+				}
+			}
+		}
+		
+		//sending result back to master
+		MPI_Send(&offset, 1, MPI_INT, 0, 2, MPI_COMM_WORLD); //offset of result matrix
+		MPI_Send(&rows, 1, MPI_INT, 0, 2, MPI_COMM_WORLD);  //no. of rows of result matrix to be sent
+		MPI_Send(&c, rows*n, MPI_INT, 0, 2, MPI_COMM_WORLD); //the result matrix
+	}
+	
+	MPI_Finalize();
+	printf("\n");
 }

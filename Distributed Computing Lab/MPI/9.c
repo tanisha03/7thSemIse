@@ -1,62 +1,50 @@
 //Monto Carlo algorithm
 
 #include<stdio.h>
-#include<mpi.h>
 #include<stdlib.h>
-#define SEED 35467892
+#include<time.h>
+#include<mpi.h>
+#include<math.h>
 
-int main(int argc , char* argv[])
+void main(int argc, char **argv)
 {
-    int rank , size;
-    long niter = 1000000;   //Number of points used, higher points = more accurate value of pi
-    double x , y , z;
-    int count = 0, i,j;
-
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-    MPI_Comm_size(MPI_COMM_WORLD,&size);
-
-    int recieved[size];
-    int recvniter[size];
-    srand(SEED+rank);
-    if(rank != 0 )
+	int rank, size, processIterations, count = 0, result;
+	long int iterations = 10000000;
+	long int seed = time(NULL);
+	double x, y, PI, timeelapsed;
+	
+	MPI_Init(&argc, &argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	
+	processIterations = iterations / size;
+	
+	srand(seed + rank);
+	
+ 	double start = MPI_Wtime();
+	
+	for(int i = 0; i < processIterations; i++)
 	{
-        for(i = 0; i < niter; i++ )
-		{
-            x = ((double)rand())/RAND_MAX;  // To make sure the value is between 0 and 1
-            y = ((double)rand())/RAND_MAX;  // To make sure the value is between 0 and 1
-            z = x*x + y*y ;
-            if(z <= 1)
-                count++;
-        }
-        for(j = 0; j < size; j++ )
-		{
-            MPI_Send(&count,1,MPI_INT,0,1,MPI_COMM_WORLD);
-            MPI_Send(&niter,1,MPI_LONG,0,2,MPI_COMM_WORLD);
-        }
-    }
-    else if( rank == 0 ) 
+		x = (double)rand() / RAND_MAX;  //don't forget to typecast rand
+		y = (double)rand() / RAND_MAX;
+		
+		if(sqrt(x*x + y*y <= 1))
+			count++;
+	}
+	
+	double total = MPI_Wtime() - start;
+	
+	MPI_Reduce(&count, &result, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&total, &timeelapsed, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD); 
+	
+	if(rank == 0)
 	{
-        for(i = 0; i < size; i++ )
-		{
-            MPI_Recv(&recieved[i],size,MPI_INT,MPI_ANY_SOURCE,1,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-            MPI_Recv(&recvniter[i],size,MPI_LONG,MPI_ANY_SOURCE,2,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-        }
-    }
-   if( rank == 0 )
-   {
-       int finalcount = 0;
-       long finalniter = 0;
+		PI = 4 * result / (double)iterations;
+		printf("Value of PI : %f", PI); 
+		printf("\nAtual value of PI : %f\n",  M_PI);
+		printf("Error in value: %f\n", M_PI - PI);
+		printf("Total time taken:%f\n", timeelapsed);
+	}
 
-       for(i = 0; i < size; i++ )
-	   {
-           finalcount += recieved[i];
-           finalniter += recvniter[i];
-       }
-
-       double pi = ((double) finalcount/(double) finalniter) * 4.0;
-       printf("\nThe value of pi is %f\n",pi);
-   }
-
-   MPI_Finalize();
+	MPI_Finalize();
 }
